@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A simple YouTube-powered music player." />
+    <meta name="theme-color" content="#0d1117" />
+    <title>Auralis Music</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d1b2d'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%2322d3ee'/%3E%3Cpath d='M25 44V18h18v6H32v5h10v6H32v9z' fill='%2306121c'/%3E%3C/svg%3E"
+    />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#mainContent">Skip to content</a>
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <a class="brand" href="#" aria-label="Auralis home">
+          <span class="brand-mark">A</span>
+          <span class="brand-text">
+            <strong>Auralis</strong>
+            <small>Music</small>
+          </span>
+        </a>
+        <nav class="nav">
+          <button class="nav-btn is-active" data-view="home" type="button">
+            <span class="material-symbols-outlined" aria-hidden="true">home</span>
+            <span>Home</span>
+          </button>
+          <button class="nav-btn" data-view="search" type="button">
+            <span class="material-symbols-outlined" aria-hidden="true">search</span>
+            <span>Search</span>
+          </button>
+          <button class="nav-btn" data-view="liked" type="button">
+            <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+            <span>Liked songs</span>
+          </button>
+          <button class="nav-btn" data-view="playlists" type="button">
+            <span class="material-symbols-outlined" aria-hidden="true">queue_music</span>
+            <span>Playlists</span>
+          </button>
+        </nav>
+        <div class="sidebar-card">
+          <p class="sidebar-card-title">Library</p>
+          <p id="librarySummary">0 liked songs</p>
+        </div>
+      </aside>
+
+      <main class="main" id="mainContent">
+        <header class="topbar">
+          <label class="search-box">
+            <span class="material-symbols-outlined" aria-hidden="true">search</span>
+            <input id="searchInput" type="search" placeholder="Search songs, albums, artists" autocomplete="off" />
+            <button class="btn icon search-clear is-hidden" id="clearSearch" type="button" aria-label="Clear search">
+              <span class="material-symbols-outlined" aria-hidden="true">close</span>
+            </button>
+          </label>
+          <div class="top-actions">
+            <button class="btn icon" id="themeToggle" type="button" aria-label="Switch theme">
+              <span class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
+            </button>
+            <button class="btn user-btn" id="authButton" type="button">
+              <span class="avatar" id="avatar">G</span>
+              <span id="authLabel">Sign in</span>
+            </button>
+          </div>
+        </header>
+
+        <section class="view is-active" data-panel="home">
+          <div class="home-hero">
+            <div>
+              <h1 id="greeting">Good evening</h1>
+              <p id="heroSub">Top songs and your library</p>
+            </div>
+            <div class="hero-actions">
+              <button class="btn primary" id="shuffleAll" type="button">
+                <span class="material-symbols-outlined" aria-hidden="true">shuffle</span>
+                Shuffle all
+              </button>
+            </div>
+          </div>
+          <div class="home-body" id="homeBody"></div>
+        </section>
+
+        <section class="view is-hidden" data-panel="search">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Find music</p>
+              <h2 id="searchTitle">Search</h2>
+            </div>
+            <span class="count-pill" id="searchCount"></span>
+          </div>
+          <div id="searchResults" class="search-results" aria-live="polite"></div>
+        </section>
+
+        <section class="view is-hidden" data-panel="album">
+          <button class="btn text back-btn" type="button">
+            <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+            Back
+          </button>
+          <div id="albumDetail"></div>
+        </section>
+
+        <section class="view is-hidden" data-panel="artist">
+          <button class="btn text back-btn" type="button">
+            <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+            Back
+          </button>
+          <div id="artistDetail"></div>
+        </section>
+
+        <section class="view is-hidden" data-panel="liked">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Saved by you</p>
+              <h2>Liked songs</h2>
+            </div>
+            <span class="count-pill" id="likedCount"></span>
+          </div>
+          <div class="track-list" id="likedList"></div>
+        </section>
+
+        <section class="view is-hidden" data-panel="playlists">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Your collection</p>
+              <h2>Playlists</h2>
+            </div>
+          </div>
+          <div class="playlist-grid" id="playlistGrid"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="youtubePlayer"></div>
+
+    <footer class="player" aria-label="Playback">
+      <div class="player-track" id="playerTrack" tabindex="0" role="button" aria-label="Open now playing">
+        <img id="playerArt" alt="" />
+        <div class="player-meta">
+          <strong id="playerTitle">Nothing playing</strong>
+          <span id="playerArtist"></span>
+        </div>
+      </div>
+      <div class="player-center">
+        <div class="player-buttons">
+          <button class="btn icon sm" id="prevButton" type="button" aria-label="Previous">
+            <span class="material-symbols-outlined" aria-hidden="true">skip_previous</span>
+          </button>
+          <button class="btn play-btn" id="playButton" type="button" aria-label="Play">
+            <span class="material-symbols-outlined" aria-hidden="true">play_arrow</span>
+          </button>
+          <button class="btn icon sm" id="nextButton" type="button" aria-label="Next">
+            <span class="material-symbols-outlined" aria-hidden="true">skip_next</span>
+          </button>
+        </div>
+        <div class="timeline">
+          <span id="currentTime">0:00</span>
+          <input id="seekBar" type="range" min="0" max="100" value="0" aria-label="Seek" />
+          <span id="duration">0:00</span>
+        </div>
+      </div>
+      <div class="player-right">
+        <label class="volume">
+          <span class="material-symbols-outlined" id="volumeIcon" aria-hidden="true">volume_up</span>
+          <input id="volumeSlider" type="range" min="0" max="100" value="70" aria-label="Volume" />
+        </label>
+        <button class="btn icon sm" id="queueToggle" type="button" aria-label="Toggle queue">
+          <span class="material-symbols-outlined" aria-hidden="true">queue_music</span>
+        </button>
+      </div>
+    </footer>
+
+    <div class="np-overlay is-hidden" id="npOverlay">
+      <div class="np-backdrop"></div>
+      <div class="np-window">
+        <button class="btn icon np-close" id="npClose" type="button" aria-label="Close now playing">
+          <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
+        </button>
+        <div class="np-body">
+          <img class="np-art" id="npArt" alt="" />
+          <div class="np-info">
+            <h2 id="npTitle">Nothing playing</h2>
+            <p id="npArtist"></p>
+          </div>
+          <div class="np-progress">
+            <input id="npSeekBar" type="range" min="0" max="100" value="0" aria-label="Seek" />
+            <div class="np-times">
+              <span id="npCurrent">0:00</span>
+              <span id="npTotal">0:00</span>
+            </div>
+          </div>
+          <div class="np-controls">
+            <button class="btn icon np-btn" id="npMute" type="button" aria-label="Mute">
+              <span class="material-symbols-outlined" aria-hidden="true">volume_up</span>
+            </button>
+            <button class="btn icon np-btn" id="npPrev" type="button" aria-label="Previous">
+              <span class="material-symbols-outlined" aria-hidden="true">skip_previous</span>
+            </button>
+            <button class="btn play-btn np-play" id="npPlay" type="button" aria-label="Play">
+              <span class="material-symbols-outlined" aria-hidden="true">play_arrow</span>
+            </button>
+            <button class="btn icon np-btn" id="npNext" type="button" aria-label="Next">
+              <span class="material-symbols-outlined" aria-hidden="true">skip_next</span>
+            </button>
+            <button class="btn icon np-btn" id="npVideo" type="button" aria-label="Toggle video">
+              <span class="material-symbols-outlined" aria-hidden="true">picture_in_picture</span>
+            </button>
+            <button class="btn icon np-btn" id="npLyrics" type="button" aria-label="Show lyrics">
+              <span class="material-symbols-outlined" aria-hidden="true">lyrics</span>
+            </button>
+          </div>
+          <section class="lyrics-panel is-hidden" aria-label="Lyrics">
+            <div class="lyrics-head">
+              <h3>Lyrics</h3>
+              <button class="btn icon sm lyrics-close" id="lyricsClose" type="button" aria-label="Close lyrics">
+                <span class="material-symbols-outlined" aria-hidden="true">close</span>
+              </button>
+            </div>
+            <div class="lyrics-list" id="lyricsList"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <aside class="queue is-hidden" id="queuePanel" aria-label="Queue">
+      <div class="queue-head">
+        <h2>Queue</h2>
+        <button class="btn icon sm" id="closeQueue" type="button" aria-label="Close queue">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </div>
+      <div class="queue-actions">
+        <button class="btn text" id="clearQueue" type="button">
+          <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+          Clear
+        </button>
+      </div>
+      <ol class="queue-list" id="queueList"></ol>
+    </aside>
+
+    <dialog class="auth-dialog" id="authDialog">
+      <form method="dialog">
+        <button class="auth-close" value="close" aria-label="Close">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </form>
+      <h2>Sign in</h2>
+      <p>Add a Google client ID to <code>app.js</code> for real sign-in. Until then, songs are saved in this browser.</p>
+      <div id="googleButton"></div>
+      <button class="btn primary full" id="demoSignIn" type="button">Continue in demo mode</button>
+    </dialog>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
